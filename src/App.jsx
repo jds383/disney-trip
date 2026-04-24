@@ -712,6 +712,7 @@ export default function DisneyDayCards() {
   const [activeDay, setActiveDay] = useState(0);
   const day = days[activeDay];
   const [rooms, setRooms] = useState({});
+  const swipeStart = useRef(null);
   const { weather, error: weatherError } = useWeather(day.weatherDate, day.weatherLat, day.weatherLon);
 
   useEffect(() => {
