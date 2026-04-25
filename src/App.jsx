@@ -230,6 +230,16 @@ function ReservationBadges({ reservations, color, icon, text, url }) {
 
 
 const days = [
+  // ── TEST DAY (remove before trip) ──
+  {
+    date: "Sat Apr 25",
+    label: "⚗️ Weather Test",
+    hotel: "Philadelphia, PA",
+    weatherDate: "2026-04-25", weatherLat: 39.9526, weatherLon: -75.1652,
+    color: "#555",
+    emoji: "🧪",
+    highlights: [{ icon: "🧪", text: "Test day — checking Open-Meteo weather on GitHub" }]
+  },
   // ── TRIP DAYS ──
   {
     date: "Thu May 21",
@@ -590,14 +600,6 @@ function useWeather(date, lat, lon) {
   useEffect(() => {
     if (!date || !lat || !lon) return;
 
-    // Don't fetch for May trip dates until ~May 5
-    const tripStart = new Date("2026-05-05");
-    const targetDate = new Date(date);
-    if (targetDate > tripStart && targetDate > new Date()) {
-      setError("not yet available");
-      return;
-    }
-
     (async () => {
       // Check cache first
       const cached = getCachedWeather(date);
@@ -654,12 +656,6 @@ function useWeather(date, lat, lon) {
 }
 
 function WeatherStack({ weather, error }) {
-  if (error === "not yet available") return (
-    <div style={{ textAlign: "right", flexShrink: 0 }}>
-      <div style={{ fontSize: 20, lineHeight: 1, marginBottom: 4 }}>📅</div>
-      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", fontFamily: "'Courier New', monospace", whiteSpace: "nowrap" }}>not yet available</div>
-    </div>
-  );
   if (error) return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 18, lineHeight: 1, marginBottom: 4 }}>⚠️</div>
@@ -712,7 +708,6 @@ export default function DisneyDayCards() {
   const [activeDay, setActiveDay] = useState(0);
   const day = days[activeDay];
   const [rooms, setRooms] = useState({});
-  const swipeStart = useRef(null);
   const { weather, error: weatherError } = useWeather(day.weatherDate, day.weatherLat, day.weatherLon);
 
   useEffect(() => {
