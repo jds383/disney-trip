@@ -240,7 +240,7 @@ const days = [
     color: "#555",
     emoji: "🧪",
     highlights: [
-      { icon: "✈️", text: "Depart PHL 4:02 PM · Arrive MCO 6:47 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL1574" },
+      { icon: "✈️", text: "Depart PHL 4:02 PM · Arrive MCO 6:47 PM", flight: true, url: "https://www.aa.com/flight/status/AA/1574/2026-04-25" },
       { icon: "🧪", text: "Test day — checking Open-Meteo weather and flight status on GitHub" }
     ]
   },
@@ -254,7 +254,7 @@ const days = [
     color: "#2C5F8A",
     emoji: "✈️",
     highlights: [
-      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL2531" },
+      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.aa.com/flight/status/AA/2531/2026-05-21" },
       { icon: "🚐", text: "9:15 PM · Away We Go pickup · MCO → Grand Floridian", url: "https://awaywegoco.com/faqs" },
       { icon: "🏨", text: "~10:00 PM · Arrive Grand Floridian · Unpack & rest" },
     ]
@@ -400,7 +400,7 @@ const days = [
       ]},
       { icon: "🏨", text: "11:00 AM · Riviera checkout · Bell Services for luggage" },
       { icon: "🚐", text: "1:00 PM · Away We Go pickup · Riviera → MCO", url: "https://awaywegoco.com/faqs" },
-      { icon: "✈️", text: "Depart MCO 3:51 PM · Arrive PHL 6:35 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL810" },
+      { icon: "✈️", text: "Depart MCO 3:51 PM · Arrive PHL 6:35 PM", flight: true, url: "https://www.aa.com/flight/status/AA/810/2026-05-27" },
     ]
   }
 ];
