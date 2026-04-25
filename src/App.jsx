@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const FLIGHTS = {
   "2026-05-21": { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
@@ -633,47 +633,88 @@ function useWeather(date, lat, lon) {
         const highIdx = temps.indexOf(Math.max(...temps));
         const lowIdx = temps.indexOf(Math.min(...temps));
 
-        // Find weather event — any rain chance >= 20%, tiered by probability
-        let stormWindow = null;
-        const allRainHours = hours.time
+        // Build full weather event timeline — group consecutive rain hours into windows
+        const hourlyEvents = hours.time
           .map((t, i) => ({ t, code: codes[i], prob: precip[i] }))
           .filter(h => h.code >= 51 && h.prob >= 20);
-        if (allRainHours.length > 0) {
-          const maxProb = Math.max(...allRainHours.map(h => h.prob));
-          const maxCode = Math.max(...allRainHours.map(h => h.code));
-          const isThunder = maxCode >= 95;
-          const peakHour = allRainHours.find(h => h.prob === maxProb);
-          if (maxProb >= 60) {
-            // Likely — show full window
-            const likelyHours = allRainHours.filter(h => h.prob >= 60);
-            stormWindow = {
-              start: fmtHour(likelyHours[0].t),
-              end: fmtHour(likelyHours[likelyHours.length - 1].t),
-              prob: maxProb,
-              label: isThunder ? "Thunderstorms likely" : "Rain likely",
-              isThunder, showRange: true,
-            };
-          } else if (maxProb >= 40) {
-            // Possible — show window
-            const possibleHours = allRainHours.filter(h => h.prob >= 40);
-            stormWindow = {
-              start: fmtHour(possibleHours[0].t),
-              end: fmtHour(possibleHours[possibleHours.length - 1].t),
-              prob: maxProb,
-              label: isThunder ? "Thunderstorms possible" : "Rain possible",
-              isThunder, showRange: true,
-            };
+
+        // Group into consecutive windows
+        const weatherWindows = [];
+        let currentWindow = null;
+        for (const h of hourlyEvents) {
+          if (!currentWindow) {
+            currentWindow = { hours: [h] };
           } else {
-            // Chance — show peak hour only
-            stormWindow = {
-              start: fmtHour(peakHour.t),
-              end: null,
-              prob: maxProb,
-              label: isThunder ? "Thunder chance" : "Rain chance",
-              isThunder, showRange: false,
-            };
+            const lastTime = new Date(currentWindow.hours[currentWindow.hours.length - 1].t);
+            const thisTime = new Date(h.t);
+            if (thisTime - lastTime <= 3600000 * 2) {
+              currentWindow.hours.push(h);
+            } else {
+              weatherWindows.push(currentWindow);
+              currentWindow = { hours: [h] };
+            }
           }
         }
+        if (currentWindow) weatherWindows.push(currentWindow);
+
+        // Convert windows to display objects
+        const getWindowDisplay = (w) => {
+          const maxProb = Math.max(...w.hours.map(h => h.prob));
+          const maxCode = Math.max(...w.hours.map(h => h.code));
+          const isThunder = maxCode >= 95;
+          const label = maxProb >= 60
+            ? (isThunder ? "Thunderstorms likely" : "Rain likely")
+            : maxProb >= 40
+            ? (isThunder ? "Thunderstorms possible" : "Rain possible")
+            : (isThunder ? "Thunder chance" : "Rain chance");
+          const icon = maxProb >= 60
+            ? (isThunder ? "⛈️" : "🌧️")
+            : (isThunder ? "🌩️" : "🌦️");
+          const opacity = maxProb >= 60 ? 0.9 : maxProb >= 40 ? 0.75 : 0.6;
+          const start = fmtHour(w.hours[0].t);
+          const end = w.hours.length > 1 ? fmtHour(w.hours[w.hours.length - 1].t) : null;
+          const severity = maxCode >= 95 ? 3 : maxCode >= 61 ? 2 : 1;
+          return { label, icon, opacity, start, end, prob: maxProb, isThunder, severity };
+        };
+
+        const allWindows = weatherWindows.map(getWindowDisplay);
+
+        // Determine current hour
+        const nowHour = new Date().getHours();
+        const currentNow = allWindows.find((_, i) => {
+          const w = weatherWindows[i];
+          const wHour = new Date(w.hours[0].t).getHours();
+          const wEndHour = new Date(w.hours[w.hours.length - 1].t).getHours();
+          return wHour <= nowHour && nowHour <= wEndHour;
+        });
+
+        const futureWindows = allWindows.filter((_, i) => {
+          const w = weatherWindows[i];
+          const wEndHour = new Date(w.hours[w.hours.length - 1].t).getHours();
+          return wEndHour > nowHour;
+        });
+
+        const mostSevere = futureWindows.length > 0
+          ? futureWindows.reduce((a, b) => b.severity > a.severity || (b.severity === a.severity && b.prob > a.prob) ? b : a)
+          : null;
+
+        // Build summary lines: now + most severe (if different)
+        let summaryLines = [];
+        if (currentNow) {
+          summaryLines.push({ ...currentNow, prefixLabel: "Now" });
+        }
+        if (mostSevere && mostSevere !== currentNow &&
+            (mostSevere.severity > (currentNow?.severity || 0) || !currentNow)) {
+          summaryLines.push(mostSevere);
+        } else if (!currentNow && futureWindows.length > 0) {
+          summaryLines.push(futureWindows[0]);
+        }
+
+        const stormWindow = allWindows.length > 0 ? {
+          summaryLines,
+          allWindows,
+          icon: summaryLines[0]?.icon || allWindows[0]?.icon || "🌦️",
+        } : null;
 
         // Dominant daytime code (9am–6pm)
         const dayCodes = codes.slice(9, 18);
@@ -720,11 +761,7 @@ function WeatherStack({ weather, error }) {
   return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 4 }}>
-        {weather.stormWindow
-          ? weather.stormWindow.prob >= 60
-            ? (weather.stormWindow.isThunder ? "⛈️" : "🌧️")
-            : (weather.stormWindow.isThunder ? "🌩️" : "🌦️")
-          : weather.icon}
+        {weather.stormWindow ? weather.stormWindow.icon : weather.icon}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "'Courier New', monospace", lineHeight: 1.5, whiteSpace: "nowrap" }}>
         <span style={{ color: "#FFF", fontWeight: "bold" }}>{weather.high}°</span>
@@ -738,23 +775,39 @@ function WeatherStack({ weather, error }) {
   );
 }
 
-function WeatherAlert({ weather, color }) {
+function WeatherAlert({ weather }) {
+  const [expanded, setExpanded] = React.useState(false);
   if (!weather?.stormWindow) return null;
-  const { start, end, prob, label, isThunder, showRange } = weather.stormWindow;
-  const icon = prob >= 60 ? (isThunder ? "⛈️" : "🌧️") : (isThunder ? "🌩️" : "🌦️");
-  const opacity = prob >= 60 ? 0.9 : prob >= 40 ? 0.75 : 0.6;
-  const timeStr = showRange && end ? `${start}–${end}` : start;
+  const { summaryLines, allWindows } = weather.stormWindow;
+  const hasMore = allWindows.length > summaryLines.length;
+  const displayLines = expanded ? allWindows : summaryLines;
+
+  const renderLine = (w, i) => {
+    const timeStr = w.end ? `${w.start}–${w.end}` : w.start;
+    const label = w.prefixLabel ? `${w.prefixLabel} · ${w.label}` : w.label;
+    return (
+      <div key={i} style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: i === 0 ? "7px 22px 4px" : "3px 22px",
+        fontSize: 11, color: `rgba(255,255,255,${w.opacity})`,
+        fontFamily: "'Courier New', monospace"
+      }}>
+        <span style={{ fontSize: 13 }}>{w.icon}</span>
+        <span>{label} · {timeStr} · {w.prob}%</span>
+      </div>
+    );
+  };
+
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 8,
-      padding: "7px 22px",
-      background: "rgba(0,0,0,0.08)",
-      borderBottom: "1px solid rgba(0,0,0,0.06)",
-      fontSize: 11, color: `rgba(255,255,255,${opacity})`,
-      fontFamily: "'Courier New', monospace"
-    }}>
-      <span>{icon}</span>
-      <span>{label} · {timeStr} · {prob}%</span>
+    <div style={{ background: "rgba(0,0,0,0.08)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: 6 }}
+      onClick={() => hasMore && setExpanded(e => !e)}
+      style={{ background: "rgba(0,0,0,0.08)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: 6, cursor: hasMore ? "pointer" : "default" }}>
+      {displayLines.map(renderLine)}
+      {hasMore && (
+        <div style={{ textAlign: "right", paddingRight: 22, fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "'Courier New', monospace" }}>
+          {expanded ? "▴ less" : `▾ +${allWindows.length - summaryLines.length} more`}
+        </div>
+      )}
     </div>
   );
 }
@@ -909,7 +962,7 @@ export default function DisneyDayCards() {
               <WeatherStack weather={weather} error={weatherError} />
             </div>
             {/* Weather alert bar — only if storm expected */}
-            <WeatherAlert weather={weather} color={day.color} />
+            <WeatherAlert weather={weather} />
           </div>
 
           {/* Highlights */}
