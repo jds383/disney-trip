@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 const FLIGHTS = {
-  "2026-04-25": { flight: "AA1574", date: "2026-04-25", from: "PHL", to: "MCO", sched_dep: "4:02 PM", sched_arr: "6:47 PM" },
+  "2026-04-25": { flight: "AA2531", date: "2026-04-25", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
   "2026-05-21": { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
   "2026-05-27": { flight: "AA810",  date: "2026-05-27", from: "MCO", to: "PHL", sched_dep: "3:51 PM", sched_arr: "6:35 PM" },
 };
@@ -12,7 +12,10 @@ const STATUS_COLORS = {
 };
 
 const fmt = (iso) => {
-  try { return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
+  try {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" });
+  }
   catch (_) { return "—"; }
 };
 
@@ -20,14 +23,16 @@ const parseFlight = (data) => {
   try {
     const f = data?.data?.[0];
     if (!f) return null;
+    const dep = f.departure || {};
+    const arr = f.arrival || {};
     return {
-      status: f.flight_status ? f.flight_status.charAt(0).toUpperCase() + f.flight_status.slice(1) : "Unknown",
-      gate_dep: f.departure?.gate || "—",
-      gate_arr: f.arrival?.gate || "—",
-      terminal_dep: f.departure?.terminal || "—",
-      terminal_arr: f.arrival?.terminal || "—",
-      actual_dep: fmt(f.departure?.actual || f.departure?.estimated),
-      actual_arr: fmt(f.arrival?.actual || f.arrival?.estimated),
+      status: f.flight_status ? f.flight_status.charAt(0).toUpperCase() + f.flight_status.slice(1) : "Scheduled",
+      gate_dep: dep.gate || "—",
+      gate_arr: arr.gate || "—",
+      terminal_dep: dep.terminal || "—",
+      terminal_arr: arr.terminal || "—",
+      actual_dep: fmt(dep.actual || dep.estimated || dep.scheduled),
+      actual_arr: fmt(arr.actual || arr.estimated || arr.scheduled),
       live: true,
     };
   } catch (_) { return null; }
@@ -240,7 +245,7 @@ const days = [
     color: "#555",
     emoji: "🧪",
     highlights: [
-      { icon: "✈️", text: "Depart PHL 4:02 PM · Arrive MCO 6:47 PM", flight: true, url: "https://www.aa.com/travelInformation/flights/status/detail?search=AA|1574|2026,4,25&ref=search" },
+      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.aa.com/travelInformation/flights/status/detail?search=AA|2531|2026,4,25&ref=search" },
       { icon: "🧪", text: "Test day — checking Open-Meteo weather and flight status on GitHub" }
     ]
   },
