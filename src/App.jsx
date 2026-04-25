@@ -681,7 +681,7 @@ function useWeather(date, lat, lon) {
           return { label, icon, opacity, start, end, prob: maxProb, isThunder, severity };
         };
 
-        const allWindows = weatherWindows.map(getWindowDisplay);
+        const allWindows = (weatherWindows || []).map(getWindowDisplay);
 
         // Determine current hour
         const nowHour = new Date().getHours();
@@ -704,6 +704,7 @@ function useWeather(date, lat, lon) {
 
         // Build summary lines: now + most severe (if different)
         let summaryLines = [];
+        if (!allWindows || allWindows.length === 0) { return; }
         if (currentNow) {
           summaryLines.push({ ...currentNow, prefixLabel: "Now" });
         }
@@ -765,7 +766,7 @@ function WeatherStack({ weather, error }) {
   return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 4 }}>
-        {weather.stormWindow ? weather.stormWindow.icon : weather.icon}
+        {weather.stormWindow?.icon ? weather.stormWindow.icon : weather.icon}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "'Courier New', monospace", lineHeight: 1.5, whiteSpace: "nowrap" }}>
         <span style={{ color: "#FFF", fontWeight: "bold" }}>{weather.high}°</span>
@@ -783,6 +784,7 @@ function WeatherAlert({ weather }) {
   const [expanded, setExpanded] = React.useState(false);
   if (!weather?.stormWindow) return null;
   const { summaryLines, allWindows } = weather.stormWindow;
+  if (!summaryLines || !allWindows || summaryLines.length === 0) return null;
   const hasMore = allWindows.length > summaryLines.length;
   const displayLines = expanded ? allWindows : summaryLines;
 
@@ -803,8 +805,7 @@ function WeatherAlert({ weather }) {
   };
 
   return (
-    <div style={{ background: "rgba(0,0,0,0.08)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: 6 }}
-      onClick={() => hasMore && setExpanded(e => !e)}
+    <div onClick={() => hasMore && setExpanded(e => !e)}
       style={{ background: "rgba(0,0,0,0.08)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: 6, cursor: hasMore ? "pointer" : "default" }}>
       {displayLines.map(renderLine)}
       {hasMore && (
@@ -845,7 +846,8 @@ export default function DisneyDayCards() {
       minHeight: "100vh",
       background: "#FBF7F2",
       fontFamily: "'Georgia', serif",
-      padding: "28px 20px"
+      padding: "28px 20px",
+      colorScheme: "light"
     }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
 
