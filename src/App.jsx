@@ -51,7 +51,7 @@ function FlightStatus({ weatherDate, color }) {
       return;
     }
     try {
-      const res = await fetch(`https://api.aviationstack.com/v1/flights?access_key=DEMO&flight_iata=${info.flight}&flight_date=${info.date}`);
+      const res = await fetch(`https://api.aviationstack.com/v1/flights?access_key=67e59f674eef0dc0ceefbdbd984e9f19&flight_iata=${info.flight}&flight_date=${info.date}`);
       const data = await res.json();
       const parsed = parseFlight(data);
       if (parsed) setLive(parsed);
