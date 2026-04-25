@@ -598,6 +598,8 @@ function useWeather(date, lat, lon) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setWeather(null);
+    setError(null);
     if (!date || !lat || !lon) return;
 
     (async () => {
@@ -611,6 +613,19 @@ function useWeather(date, lat, lon) {
         const data = await res.json();
 
         const hours = data.hourly;
+
+        // If no data returned, forecast not yet available for this date
+        if (!hours || !hours.temperature_2m || hours.temperature_2m.length === 0) {
+          // Calculate days until forecast available (Open-Meteo ~16 day window)
+          const target = new Date(date);
+          const today = new Date();
+          const daysUntil = Math.ceil((target - today) / 86400000) - 14;
+          const availDate = new Date(today.getTime() + (daysUntil > 0 ? daysUntil : 0) * 86400000);
+          const availStr = availDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          setError(daysUntil > 0 ? `available ~${availStr}` : "no data");
+          return;
+        }
+
         const temps = hours.temperature_2m;
         const codes = hours.weathercode;
         const precip = hours.precipitation_probability;
@@ -646,6 +661,7 @@ function useWeather(date, lat, lon) {
           stormWindow,
         };
 
+        // Only cache successful results
         setCachedWeather(date, w);
         setWeather(w);
       } catch (e) { setError("failed: " + e.message); }
@@ -656,12 +672,15 @@ function useWeather(date, lat, lon) {
 }
 
 function WeatherStack({ weather, error }) {
-  if (error) return (
-    <div style={{ textAlign: "right", flexShrink: 0 }}>
-      <div style={{ fontSize: 18, lineHeight: 1, marginBottom: 4 }}>⚠️</div>
-      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: "'Courier New', monospace", maxWidth: 100, wordBreak: "break-all" }}>{error}</div>
-    </div>
-  );
+  if (error) {
+    const isUnavailable = error.startsWith("available");
+    return (
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: isUnavailable ? 16 : 18, lineHeight: 1, marginBottom: 4 }}>{isUnavailable ? "📅" : "⚠️"}</div>
+        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontFamily: "'Courier New', monospace", maxWidth: 90, wordBreak: "break-word", lineHeight: 1.4 }}>{error}</div>
+      </div>
+    );
+  }
   if (!weather) return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 16, lineHeight: 1, marginBottom: 4 }}>🌡️</div>
