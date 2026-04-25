@@ -633,16 +633,22 @@ function useWeather(date, lat, lon) {
         const highIdx = temps.indexOf(Math.max(...temps));
         const lowIdx = temps.indexOf(Math.min(...temps));
 
-        // Find storm window (precip prob >= 50% with thunderstorm code)
+        // Find weather event window — rain (code >= 61) or thunderstorms (>= 95) with >= 50% prob
         let stormWindow = null;
-        const stormHours = hours.time
+        const eventHours = hours.time
           .map((t, i) => ({ t, code: codes[i], prob: precip[i] }))
-          .filter(h => h.code >= 95 && h.prob >= 50);
-        if (stormHours.length > 0) {
-          const start = fmtHour(stormHours[0].t);
-          const end = fmtHour(stormHours[stormHours.length - 1].t);
-          const maxProb = Math.max(...stormHours.map(h => h.prob));
-          stormWindow = { start, end, prob: maxProb, label: "Storm possible" };
+          .filter(h => h.code >= 61 && h.prob >= 50);
+        if (eventHours.length > 0) {
+          const start = fmtHour(eventHours[0].t);
+          const end = fmtHour(eventHours[eventHours.length - 1].t);
+          const maxProb = Math.max(...eventHours.map(h => h.prob));
+          const maxCode = Math.max(...eventHours.map(h => h.code));
+          const isThunder = maxCode >= 95;
+          stormWindow = {
+            start, end, prob: maxProb,
+            label: isThunder ? "Thunderstorms" : "Rain",
+            isThunder,
+          };
         }
 
         // Dominant daytime code (9am–6pm)
@@ -690,7 +696,7 @@ function WeatherStack({ weather, error }) {
   return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 4 }}>
-        {weather.stormWindow ? "⛈️" : weather.icon}
+        {weather.stormWindow ? (weather.stormWindow.isThunder ? "⛈️" : "🌧️") : weather.icon}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "'Courier New', monospace", lineHeight: 1.5, whiteSpace: "nowrap" }}>
         <span style={{ color: "#FFF", fontWeight: "bold" }}>{weather.high}°</span>
@@ -706,7 +712,8 @@ function WeatherStack({ weather, error }) {
 
 function WeatherAlert({ weather, color }) {
   if (!weather?.stormWindow) return null;
-  const { start, end, prob, label } = weather.stormWindow;
+  const { start, end, prob, label, isThunder } = weather.stormWindow;
+  const icon = isThunder ? "⛈️" : "🌧️";
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 8,
@@ -716,7 +723,7 @@ function WeatherAlert({ weather, color }) {
       fontSize: 11, color: "rgba(255,255,255,0.9)",
       fontFamily: "'Courier New', monospace"
     }}>
-      <span>⛈️</span>
+      <span>{icon}</span>
       <span>{label} {start}–{end} · {prob}% chance</span>
     </div>
   );
