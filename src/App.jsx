@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 
 const FLIGHTS = {
-  0: { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
-  6: { flight: "AA810",  date: "2026-05-27", from: "MCO", to: "PHL", sched_dep: "3:51 PM", sched_arr: "6:35 PM" },
+  "2026-05-21": { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
+  "2026-05-27": { flight: "AA810",  date: "2026-05-27", from: "MCO", to: "PHL", sched_dep: "3:51 PM", sched_arr: "6:35 PM" },
 };
 
 const STATUS_COLORS = {
@@ -32,8 +32,8 @@ const parseFlight = (data) => {
   } catch (_) { return null; }
 };
 
-function FlightStatus({ dayIndex, color }) {
-  const info = FLIGHTS[dayIndex];
+function FlightStatus({ weatherDate, color }) {
+  const info = FLIGHTS[weatherDate];
   const [live, setLive] = useState(null);
   const [checked, setChecked] = useState(false);
   const [spinning, setSpinning] = useState(false);
@@ -633,22 +633,46 @@ function useWeather(date, lat, lon) {
         const highIdx = temps.indexOf(Math.max(...temps));
         const lowIdx = temps.indexOf(Math.min(...temps));
 
-        // Find weather event window — rain (code >= 61) or thunderstorms (>= 95) with >= 50% prob
+        // Find weather event — any rain chance >= 20%, tiered by probability
         let stormWindow = null;
-        const eventHours = hours.time
+        const allRainHours = hours.time
           .map((t, i) => ({ t, code: codes[i], prob: precip[i] }))
-          .filter(h => h.code >= 61 && h.prob >= 50);
-        if (eventHours.length > 0) {
-          const start = fmtHour(eventHours[0].t);
-          const end = fmtHour(eventHours[eventHours.length - 1].t);
-          const maxProb = Math.max(...eventHours.map(h => h.prob));
-          const maxCode = Math.max(...eventHours.map(h => h.code));
+          .filter(h => h.code >= 51 && h.prob >= 20);
+        if (allRainHours.length > 0) {
+          const maxProb = Math.max(...allRainHours.map(h => h.prob));
+          const maxCode = Math.max(...allRainHours.map(h => h.code));
           const isThunder = maxCode >= 95;
-          stormWindow = {
-            start, end, prob: maxProb,
-            label: isThunder ? "Thunderstorms" : "Rain",
-            isThunder,
-          };
+          const peakHour = allRainHours.find(h => h.prob === maxProb);
+          if (maxProb >= 60) {
+            // Likely — show full window
+            const likelyHours = allRainHours.filter(h => h.prob >= 60);
+            stormWindow = {
+              start: fmtHour(likelyHours[0].t),
+              end: fmtHour(likelyHours[likelyHours.length - 1].t),
+              prob: maxProb,
+              label: isThunder ? "Thunderstorms likely" : "Rain likely",
+              isThunder, showRange: true,
+            };
+          } else if (maxProb >= 40) {
+            // Possible — show window
+            const possibleHours = allRainHours.filter(h => h.prob >= 40);
+            stormWindow = {
+              start: fmtHour(possibleHours[0].t),
+              end: fmtHour(possibleHours[possibleHours.length - 1].t),
+              prob: maxProb,
+              label: isThunder ? "Thunderstorms possible" : "Rain possible",
+              isThunder, showRange: true,
+            };
+          } else {
+            // Chance — show peak hour only
+            stormWindow = {
+              start: fmtHour(peakHour.t),
+              end: null,
+              prob: maxProb,
+              label: isThunder ? "Thunder chance" : "Rain chance",
+              isThunder, showRange: false,
+            };
+          }
         }
 
         // Dominant daytime code (9am–6pm)
@@ -696,7 +720,11 @@ function WeatherStack({ weather, error }) {
   return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 4 }}>
-        {weather.stormWindow ? (weather.stormWindow.isThunder ? "⛈️" : "🌧️") : weather.icon}
+        {weather.stormWindow
+          ? weather.stormWindow.prob >= 60
+            ? (weather.stormWindow.isThunder ? "⛈️" : "🌧️")
+            : (weather.stormWindow.isThunder ? "🌩️" : "🌦️")
+          : weather.icon}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "'Courier New', monospace", lineHeight: 1.5, whiteSpace: "nowrap" }}>
         <span style={{ color: "#FFF", fontWeight: "bold" }}>{weather.high}°</span>
@@ -712,19 +740,21 @@ function WeatherStack({ weather, error }) {
 
 function WeatherAlert({ weather, color }) {
   if (!weather?.stormWindow) return null;
-  const { start, end, prob, label, isThunder } = weather.stormWindow;
-  const icon = isThunder ? "⛈️" : "🌧️";
+  const { start, end, prob, label, isThunder, showRange } = weather.stormWindow;
+  const icon = prob >= 60 ? (isThunder ? "⛈️" : "🌧️") : (isThunder ? "🌩️" : "🌦️");
+  const opacity = prob >= 60 ? 0.9 : prob >= 40 ? 0.75 : 0.6;
+  const timeStr = showRange && end ? `${start}–${end}` : start;
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 8,
       padding: "7px 22px",
       background: "rgba(0,0,0,0.08)",
       borderBottom: "1px solid rgba(0,0,0,0.06)",
-      fontSize: 11, color: "rgba(255,255,255,0.9)",
+      fontSize: 11, color: `rgba(255,255,255,${opacity})`,
       fontFamily: "'Courier New', monospace"
     }}>
       <span>{icon}</span>
-      <span>{label} {start}–{end} · {prob}% chance</span>
+      <span>{label} · {timeStr} · {prob}%</span>
     </div>
   );
 }
@@ -939,7 +969,7 @@ export default function DisneyDayCards() {
                     {h.quickService && <QuickServiceDining color={day.color} />}
                     {h.flight && FLIGHTS[activeDay] && (
                       <div style={{ borderBottom: hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none" }}>
-                        <FlightStatus dayIndex={activeDay} color={day.color} />
+                        <FlightStatus weatherDate={day.weatherDate} color={day.color} />
                       </div>
                     )}
                   </>
