@@ -350,11 +350,11 @@ const days = [
     emoji: "🌐",
     highlights: [
       { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM Park Open · 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/" },
-      { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
+      { icon: "👸", text: "11:25 AM · Akershus Princess Storybook Dining", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
-      { icon: "🎆", text: "9:00 PM · Luminous: The Symphony of Us", url: "https://disneyworld.disney.go.com/entertainment/epcot/luminous-the-symphony-us/" },
-      { icon: "🌙", text: "9:00–11:00 PM · Extended Evening Hours · Deluxe resort guests" },
+      { icon: "🎆", text: "9:00 PM · Luminous: The Symphony of Us Fireworks", url: "https://disneyworld.disney.go.com/entertainment/epcot/luminous-the-symphony-us/" },
+      { icon: "🌙", text: "9:00–11:00 PM · Extended Evening Hours" },
     ]
   },
   {
