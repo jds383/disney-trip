@@ -242,7 +242,7 @@ const days = [
     highlights: [
       { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL2531" },
       { icon: "🚐", text: "9:15 PM · Away We Go pickup · MCO → Grand Floridian", url: "https://awaywegoco.com/faqs" },
-      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
+      { icon: "🚤", text: "8:35 - 10:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       { icon: "🏨", text: "~10:00 PM · Arrive Grand Floridian · Unpack & rest" },
     ]
   },
@@ -283,7 +283,7 @@ const days = [
         { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
         { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
       ]},
-      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
+      { icon: "🚤", text: "8:35 - 10:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
     ]
   },
   {
@@ -298,7 +298,7 @@ const days = [
       { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM Park Open · 10:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
       { icon: "🌟", text: "8:15 PM · Disney Starlight: Dream the Night Away Parade", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
-      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
+      { icon: "🚤", text: "8:35 - 10:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       { icon: "🎆", text: "10:00 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
     ]
   },
