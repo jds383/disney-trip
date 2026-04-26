@@ -370,7 +370,7 @@ const days = [
       { icon: "🍽️", text: "4:10 PM · Hollywood & Vine Fantasmic! Dining Package", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
-      { icon: "🎆", text: "9:00 PM · Fantasmic! (8:30 seating)" },
+      { icon: "🎆", text: "9:00 PM · Fantasmic! (8:30 seating)", url: "https://disneyworld.disney.go.com/entertainment/hollywood-studios/fantasmic/" },
     ]
   },
   {
