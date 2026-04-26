@@ -297,10 +297,6 @@ const days = [
       { icon: "🍽️", text: "4:00 PM · 1900 Park Fare Dinner · Grand Floridian", url: "https://disneyworld.disney.go.com/dining/grand-floridian-resort-and-spa/1900-park-fare/menus/dinner/", reservations: [
         { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
         { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
-      { icon: "🏨", text: "~3:00 PM · Poly room ready · Bell Services delivers" },
-      { icon: "🍽️", text: "4:00 PM · 1900 Park Fare Dinner · Grand Floridian", url: "https://disneyworld.disney.go.com/dining/grand-floridian-resort-and-spa/1900-park-fare/menus/dinner/", reservations: [
-        { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
-        { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
       ]},
     ]
   },
@@ -313,10 +309,10 @@ const days = [
     color: "#1A6B4A",
     emoji: "🏰",
     highlights: [
-      { icon: "🏰", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM · Park Close: 10:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
+      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
-      { icon: "🌟", text: "~8:15 PM · Disney Starlight: Dream the Night Away (nighttime parade)" },
-      { icon: "🎆", text: "~9:30 PM · Happily Ever After Fireworks · confirm in My Disney Experience" },
+      { icon: "🌟", text: "~8:45 PM · Disney Starlight: Dream the Night Away (nighttime parade)", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
+      { icon: "🎆", text: "~10:00 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
     ]
   },
   {
@@ -366,11 +362,11 @@ const days = [
     color: "#4A2C6B",
     emoji: "🌐",
     highlights: [
-      { icon: "🎡", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM · Park Close: 9:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
+      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
       { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
-      { icon: "🎆", text: "~9:00 PM · Luminous: The Symphony of Us (fireworks)" },
+      { icon: "🎆", text: "~9:00 PM · Luminous: The Symphony of Us", url: "https://disneyworld.disney.go.com/entertainment/epcot/luminous-the-symphony-us/" },
       { icon: "🌙", text: "9:00–11:00 PM · Extended Evening Hours · Deluxe resort guests" },
     ]
   },
@@ -383,11 +379,11 @@ const days = [
     color: "#8A3A2C",
     emoji: "🎬",
     highlights: [
-      { icon: "🎬", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM · Park Close: 9:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-26/#/hollywood-studios/" },
+      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-26/#/hollywood-studios/" },
       { icon: "🍽️", text: "4:10 PM · Minnie's Seasonal Dine · Hollywood & Vine · Dining Package includes preferred Fantasmic! seating", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
-      { icon: "🎆", text: "8:30 PM · Head to Fantasmic! amphitheater for preferred seating · Show starts 9:00 PM" },
+      { icon: "🎆", text: "8:30 PM · Head to Fantasmic! amphitheater for preferred seating · Show starts 9:00 PM", url: "https://disneyworld.disney.go.com/entertainment/hollywood-studios/fantasmic/" },
     ]
   },
   {
