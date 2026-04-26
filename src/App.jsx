@@ -380,10 +380,10 @@ const days = [
     emoji: "🎬",
     highlights: [
       { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM Park Open · 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-26/#/hollywood-studios/" },
-      { icon: "🍽️", text: "4:10 PM · Minnie's Seasonal Dine · Hollywood & Vine · Dining Package includes preferred Fantasmic! seating", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
+      { icon: "🍽️", text: "4:10 PM · Hollywood & Vine Fantasmic! Package", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
-      { icon: "🎆", text: "8:30 PM · Head to Fantasmic! amphitheater for preferred seating · Show starts 9:00 PM", url: "https://disneyworld.disney.go.com/entertainment/hollywood-studios/fantasmic/" },
+      { icon: "🎆", text: "9:00 PM Fantasmic! (8:30 PM for seating)", url: "https://disneyworld.disney.go.com/entertainment/hollywood-studios/fantasmic/" },
     ]
   },
   {
