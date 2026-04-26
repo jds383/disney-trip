@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const FLIGHTS = {
-  "2026-04-25": { flight: "AA2531", date: "2026-04-25", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
-  "2026-05-21": { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
-  "2026-05-27": { flight: "AA810",  date: "2026-05-27", from: "MCO", to: "PHL", sched_dep: "3:51 PM", sched_arr: "6:35 PM" },
+  0: { flight: "AA2531", date: "2026-05-21", from: "PHL", to: "MCO", sched_dep: "5:50 PM", sched_arr: "8:46 PM" },
+  6: { flight: "AA810",  date: "2026-05-27", from: "MCO", to: "PHL", sched_dep: "3:51 PM", sched_arr: "6:35 PM" },
 };
 
 const STATUS_COLORS = {
@@ -12,10 +11,7 @@ const STATUS_COLORS = {
 };
 
 const fmt = (iso) => {
-  try {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" });
-  }
+  try { return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
   catch (_) { return "—"; }
 };
 
@@ -23,24 +19,23 @@ const parseFlight = (data) => {
   try {
     const f = data?.data?.[0];
     if (!f) return null;
-    const dep = f.departure || {};
-    const arr = f.arrival || {};
     return {
-      status: f.flight_status ? f.flight_status.charAt(0).toUpperCase() + f.flight_status.slice(1) : "Scheduled",
-      gate_dep: dep.gate || "—",
-      gate_arr: arr.gate || "—",
-      terminal_dep: dep.terminal || "—",
-      terminal_arr: arr.terminal || "—",
-      actual_dep: fmt(dep.actual || dep.estimated || dep.scheduled),
-      actual_arr: fmt(arr.actual || arr.estimated || arr.scheduled),
+      status: f.flight_status ? f.flight_status.charAt(0).toUpperCase() + f.flight_status.slice(1) : "Unknown",
+      gate_dep: f.departure?.gate || "—",
+      gate_arr: f.arrival?.gate || "—",
+      terminal_dep: f.departure?.terminal || "—",
+      terminal_arr: f.arrival?.terminal || "—",
+      actual_dep: fmt(f.departure?.actual || f.departure?.estimated),
+      actual_arr: fmt(f.arrival?.actual || f.arrival?.estimated),
       live: true,
     };
   } catch (_) { return null; }
 };
 
-function FlightStatus({ weatherDate, color, icon, fallbackUrl, borderBottom }) {
-  const info = FLIGHTS[weatherDate];
+function FlightStatus({ dayIndex, color }) {
+  const info = FLIGHTS[dayIndex];
   const [live, setLive] = useState(null);
+  const [checked, setChecked] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -49,61 +44,63 @@ function FlightStatus({ weatherDate, color, icon, fallbackUrl, borderBottom }) {
     setSpinning(true);
     const today = new Date().toISOString().split("T")[0];
     if (today !== info.date) {
-      await new Promise(r => setTimeout(r, 400));
-      setLastUpdated(new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }));
+      await new Promise(r => setTimeout(r, 600));
+      setLastUpdated(`as of: ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "2-digit" })} ${new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} · no live data yet`);
       setSpinning(false);
       return;
     }
     try {
-      const key = "67e59f674eef0dc0ceefbdbd984e9f19";
-      const res = await fetch("https://api.aviationstack.com/v1/flights?access_key=" + key + "&flight_iata=" + info.flight + "&flight_date=" + info.date);
+      const res = await fetch(`https://api.aviationstack.com/v1/flights?access_key=DEMO&flight_iata=${info.flight}&flight_date=${info.date}`);
       const data = await res.json();
       const parsed = parseFlight(data);
       if (parsed) setLive(parsed);
-      setLastUpdated(new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }));
-    } catch (_) {}
+      setLastUpdated(`as of: ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "2-digit" })} ${new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`);
+    } catch (_) {
+      setLastUpdated("check failed");
+    }
     setSpinning(false);
+    setChecked(true);
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  // If no FLIGHTS entry, fall back to plain link
-  if (!info) return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 22px", borderBottom: borderBottom ? "1px solid #F5F0EA" : "none" }}>
-      <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
-      <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color, lineHeight: 1.5, textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}>
-        ↗
-      </a>
-    </div>
-  );
+  if (!info) return null;
 
-  const status = live?.status || null;
-  const statusColor = STATUS_COLORS[status] || "#888";
-  const depTime = live?.actual_dep || info.sched_dep;
-  const arrTime = live?.actual_arr || info.sched_arr;
-  const flightNum = info.flight.replace("AA", "");
-  const dateParts = info.date.split("-");
-  const aaUrl = "https://www.aa.com/travelInformation/flights/status/detail?search=AA|" + flightNum + "|" + dateParts[0] + "," + parseInt(dateParts[1]) + "," + parseInt(dateParts[2]) + "&ref=search";
+  const d = live || { status: "Scheduled", gate_dep: "—", gate_arr: "—", terminal_dep: "—", terminal_arr: "—", actual_dep: info.sched_dep, actual_arr: info.sched_arr, live: false };
+  const statusColor = STATUS_COLORS[d.status] || "#888";
+  const isLive = d.live;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 22px", borderBottom: borderBottom ? "1px solid #F5F0EA" : "none" }}>
-      {/* Icon */}
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
-      {/* Flight info link */}
-      <a href={aaUrl} target="_blank" rel="noopener noreferrer"
-        style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", flex: 1, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A", fontFamily: "'Courier New', monospace" }}>{info.flight}</span>
-        <span style={{ fontSize: 13, color: "#1A1A1A" }}>{info.from} {depTime} → {info.to} {arrTime}</span>
-        {status && (
-          <span style={{ fontSize: 10, background: statusColor + "22", color: statusColor, border: "1px solid " + statusColor + "44", borderRadius: 20, padding: "1px 8px", fontFamily: "'Courier New', monospace" }}>{status}</span>
-        )}
-        <span style={{ fontSize: 11, color }}>↗</span>
-      </a>
-      {/* As of + refresh */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-        {lastUpdated && <span style={{ fontSize: 9, color: "#BBB", fontFamily: "'Courier New', monospace", whiteSpace: "nowrap" }}>as of {lastUpdated}</span>}
-        <button onClick={e => { e.stopPropagation(); fetchData(); }}
-          style={{ fontSize: 13, background: "none", border: "none", cursor: "pointer", color: "#CCC", padding: 0, lineHeight: 1, display: "inline-flex", alignItems: "center", transform: spinning ? "rotate(180deg)" : "none", transition: "transform 0.4s ease" }}>↻</button>
+    <div style={{ margin: "0", borderTop: "1px solid rgba(0,0,0,0.06)", background: "#FAFAF8" }}>
+      {/* Flight header row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 22px 6px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A", fontFamily: "'Courier New', monospace" }}>{info.flight}</span>
+          <span style={{ fontSize: 11, color: "#888" }}>{info.from} → {info.to}</span>
+          <span style={{ fontSize: 10, background: statusColor + "22", color: statusColor, border: `1px solid ${statusColor}44`, borderRadius: 20, padding: "1px 8px", fontFamily: "'Courier New', monospace" }}>{d.status}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: isLive ? "#27AE60" : "#CCC", boxShadow: isLive ? "0 0 4px #27AE60" : "none" }} />
+          <span style={{ fontSize: 9, color: "#AAA", fontFamily: "'Courier New', monospace" }}>
+            {lastUpdated || `as of: ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "2-digit" })} ${new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} · no live data yet`}
+          </span>
+          <button onClick={e => { e.stopPropagation(); fetchData(); }} style={{ fontSize: 13, background: "none", border: "none", cursor: "pointer", color: "#BBB", padding: "0 2px", lineHeight: 1, display: "inline-flex", alignItems: "center", transform: spinning ? "rotate(180deg)" : "none", transition: "transform 0.4s ease" }}>↻</button>
+        </div>
+      </div>
+
+      {/* Flight data grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: "0 22px 12px", gap: "4px 0" }}>
+        {[
+          { label: "Sched Dep", val: info.sched_dep }, { label: "Sched Arr", val: info.sched_arr },
+          { label: "Actual Dep", val: d.actual_dep },  { label: "Actual Arr", val: d.actual_arr },
+          { label: "Terminal (Dep)", val: d.terminal_dep }, { label: "Terminal (Arr)", val: d.terminal_arr },
+          { label: "Gate (Dep)", val: d.gate_dep },    { label: "Gate (Arr)", val: d.gate_arr },
+        ].map(({ label, val }) => (
+          <div key={label} style={{ padding: "4px 0" }}>
+            <div style={{ fontSize: 9, color: "#AAA", fontFamily: "'Courier New', monospace", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</div>
+            <div style={{ fontSize: 14, color: val === "—" ? "#DDD" : "#1A1A1A" }}>{val}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -233,19 +230,6 @@ function ReservationBadges({ reservations, color, icon, text, url }) {
 
 
 const days = [
-  // ── TEST DAY (remove before trip) ──
-  {
-    date: "Sat Apr 25",
-    label: "⚗️ Weather Test",
-    hotel: "Philadelphia, PA",
-    weatherDate: "2026-04-25", weatherLat: 39.9526, weatherLon: -75.1652,
-    color: "#555",
-    emoji: "🧪",
-    highlights: [
-      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.aa.com/travelInformation/flights/status/detail?search=AA|2531|2026,4,25&ref=search" },
-      { icon: "🧪", text: "Test day — checking Open-Meteo weather and flight status on GitHub" }
-    ]
-  },
   // ── TRIP DAYS ──
   {
     date: "Thu May 21",
@@ -256,9 +240,10 @@ const days = [
     color: "#2C5F8A",
     emoji: "✈️",
     highlights: [
-      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.aa.com/travelInformation/flights/status/detail?search=AA|2531|2026,5,21&ref=search" },
+      { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL2531" },
       { icon: "🚐", text: "9:15 PM · Away We Go pickup · MCO → Grand Floridian", url: "https://awaywegoco.com/faqs" },
       { icon: "🏨", text: "~10:00 PM · Arrive Grand Floridian · Unpack & rest" },
+      { icon: "🚤", text: "~9:15 PM · Electrical Water Pageant · visible from GF beach", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
     ]
   },
   {
@@ -294,6 +279,7 @@ const days = [
         ]},
       ]},
       { icon: "🏨", text: "~3:00 PM · Poly room ready · Bell Services delivers" },
+      { icon: "🚤", text: "~9:05 PM · Electrical Water Pageant · visible from GF and Poly beaches", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       { icon: "🍽️", text: "4:00 PM · 1900 Park Fare Dinner · Grand Floridian", url: "https://disneyworld.disney.go.com/dining/grand-floridian-resort-and-spa/1900-park-fare/menus/dinner/", reservations: [
         { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
         { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
@@ -309,10 +295,11 @@ const days = [
     color: "#1A6B4A",
     emoji: "🏰",
     highlights: [
-      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM Park Open · 10:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
+      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
-      { icon: "🌟", text: "8:45 PM · Disney Starlight: Dream the Night Away Parade", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
-      { icon: "🎆", text: "10:00 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
+      { icon: "🌟", text: "~8:15 PM · Disney Starlight: Dream the Night Away (nighttime parade)" },
+      { icon: "🎆", text: "~9:30 PM · Happily Ever After Fireworks · confirm in My Disney Experience" },
+      { icon: "🚤", text: "~9:05 PM · Electrical Water Pageant · visible from Poly beach", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
     ]
   },
   {
@@ -362,11 +349,11 @@ const days = [
     color: "#4A2C6B",
     emoji: "🌐",
     highlights: [
-      { icon: "🎡", text: "8:30 AM Early Entry | 9:00 AM Park Open | 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
+      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
-      { icon: "🎆", text: "9:00 PM · Luminous: The Symphony of Us", url: "https://disneyworld.disney.go.com/entertainment/epcot/luminous-the-symphony-us/" },
+      { icon: "🎆", text: "~9:00 PM · Luminous: The Symphony of Us (fireworks)" },
       { icon: "🌙", text: "9:00–11:00 PM · Extended Evening Hours · Deluxe resort guests" },
     ]
   },
@@ -379,11 +366,11 @@ const days = [
     color: "#8A3A2C",
     emoji: "🎬",
     highlights: [
-      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM Park Open · 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-26/#/hollywood-studios/" },
-      { icon: "🍽️", text: "4:10 PM · Hollywood & Vine Fantasmic! Package", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
+      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🍽️", text: "4:10 PM · Minnie's Seasonal Dine · Hollywood & Vine · Dining Package includes preferred Fantasmic! seating", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
-      { icon: "🎆", text: "9:00 PM Fantasmic! (8:30 PM for seating)", url: "https://disneyworld.disney.go.com/entertainment/hollywood-studios/fantasmic/" },
+      { icon: "🎆", text: "8:30 PM · Head to Fantasmic! amphitheater for preferred seating · Show starts 9:00 PM" },
     ]
   },
   {
@@ -402,7 +389,7 @@ const days = [
       ]},
       { icon: "🏨", text: "11:00 AM · Riviera checkout · Bell Services for luggage" },
       { icon: "🚐", text: "1:00 PM · Away We Go pickup · Riviera → MCO", url: "https://awaywegoco.com/faqs" },
-      { icon: "✈️", text: "Depart MCO 3:51 PM · Arrive PHL 6:35 PM", flight: true, url: "https://www.aa.com/travelInformation/flights/status/detail?search=AA|810|2026,5,27&ref=search" },
+      { icon: "✈️", text: "Depart MCO 3:51 PM · Arrive PHL 6:35 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL810" },
     ]
   }
 ];
@@ -604,9 +591,15 @@ function useWeather(date, lat, lon) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setWeather(null);
-    setError(null);
     if (!date || !lat || !lon) return;
+
+    // Don't fetch for May trip dates until ~May 5
+    const tripStart = new Date("2026-05-05");
+    const targetDate = new Date(date);
+    if (targetDate > tripStart && targetDate > new Date()) {
+      setError("not yet available");
+      return;
+    }
 
     (async () => {
       // Check cache first
@@ -619,19 +612,6 @@ function useWeather(date, lat, lon) {
         const data = await res.json();
 
         const hours = data.hourly;
-
-        // If no data returned, forecast not yet available for this date
-        if (!hours || !hours.temperature_2m || hours.temperature_2m.length === 0) {
-          // Calculate days until forecast available (Open-Meteo ~16 day window)
-          const target = new Date(date);
-          const today = new Date();
-          const daysUntil = Math.ceil((target - today) / 86400000) - 14;
-          const availDate = new Date(today.getTime() + (daysUntil > 0 ? daysUntil : 0) * 86400000);
-          const availStr = availDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          setError(daysUntil > 0 ? `available ~${availStr}` : "no data");
-          return;
-        }
-
         const temps = hours.temperature_2m;
         const codes = hours.weathercode;
         const precip = hours.precipitation_probability;
@@ -639,89 +619,17 @@ function useWeather(date, lat, lon) {
         const highIdx = temps.indexOf(Math.max(...temps));
         const lowIdx = temps.indexOf(Math.min(...temps));
 
-        // Build full weather event timeline — group consecutive rain hours into windows
-        const hourlyEvents = hours.time
+        // Find storm window (precip prob >= 50% with thunderstorm code)
+        let stormWindow = null;
+        const stormHours = hours.time
           .map((t, i) => ({ t, code: codes[i], prob: precip[i] }))
-          .filter(h => h.code >= 51 && h.prob >= 20);
-
-        // Group into consecutive windows
-        const weatherWindows = [];
-        let currentWindow = null;
-        for (const h of hourlyEvents) {
-          if (!currentWindow) {
-            currentWindow = { hours: [h] };
-          } else {
-            const lastTime = new Date(currentWindow.hours[currentWindow.hours.length - 1].t);
-            const thisTime = new Date(h.t);
-            if (thisTime - lastTime <= 3600000 * 2) {
-              currentWindow.hours.push(h);
-            } else {
-              weatherWindows.push(currentWindow);
-              currentWindow = { hours: [h] };
-            }
-          }
+          .filter(h => h.code >= 95 && h.prob >= 50);
+        if (stormHours.length > 0) {
+          const start = fmtHour(stormHours[0].t);
+          const end = fmtHour(stormHours[stormHours.length - 1].t);
+          const maxProb = Math.max(...stormHours.map(h => h.prob));
+          stormWindow = { start, end, prob: maxProb, label: "Storm possible" };
         }
-        if (currentWindow) weatherWindows.push(currentWindow);
-
-        // Convert windows to display objects
-        const getWindowDisplay = (w) => {
-          const maxProb = Math.max(...w.hours.map(h => h.prob));
-          const maxCode = Math.max(...w.hours.map(h => h.code));
-          const isThunder = maxCode >= 95;
-          const label = maxProb >= 60
-            ? (isThunder ? "Thunderstorms likely" : "Rain likely")
-            : maxProb >= 40
-            ? (isThunder ? "Thunderstorms possible" : "Rain possible")
-            : (isThunder ? "Thunder chance" : "Rain chance");
-          const icon = maxProb >= 60
-            ? (isThunder ? "⛈️" : "🌧️")
-            : (isThunder ? "🌩️" : "🌦️");
-          const opacity = maxProb >= 60 ? 0.9 : maxProb >= 40 ? 0.75 : 0.6;
-          const start = fmtHour(w.hours[0].t);
-          const end = w.hours.length > 1 ? fmtHour(w.hours[w.hours.length - 1].t) : null;
-          const severity = maxCode >= 95 ? 3 : maxCode >= 61 ? 2 : 1;
-          return { label, icon, opacity, start, end, prob: maxProb, isThunder, severity };
-        };
-
-        const allWindows = (weatherWindows || []).map(getWindowDisplay);
-
-        // Determine current hour
-        const nowHour = new Date().getHours();
-        const currentNow = allWindows.find((_, i) => {
-          const w = weatherWindows[i];
-          const wHour = new Date(w.hours[0].t).getHours();
-          const wEndHour = new Date(w.hours[w.hours.length - 1].t).getHours();
-          return wHour <= nowHour && nowHour <= wEndHour;
-        });
-
-        const futureWindows = allWindows.filter((_, i) => {
-          const w = weatherWindows[i];
-          const wEndHour = new Date(w.hours[w.hours.length - 1].t).getHours();
-          return wEndHour > nowHour;
-        });
-
-        const mostSevere = futureWindows.length > 0
-          ? futureWindows.reduce((a, b) => b.severity > a.severity || (b.severity === a.severity && b.prob > a.prob) ? b : a)
-          : null;
-
-        // Build summary lines: now + most severe (if different)
-        let summaryLines = [];
-        if (!allWindows || allWindows.length === 0) { return; }
-        if (currentNow) {
-          summaryLines.push({ ...currentNow, prefixLabel: "Now" });
-        }
-        if (mostSevere && mostSevere !== currentNow &&
-            (mostSevere.severity > (currentNow?.severity || 0) || !currentNow)) {
-          summaryLines.push(mostSevere);
-        } else if (!currentNow && futureWindows.length > 0) {
-          summaryLines.push(futureWindows[0]);
-        }
-
-        const stormWindow = allWindows.length > 0 ? {
-          summaryLines,
-          allWindows,
-          icon: summaryLines[0]?.icon || allWindows[0]?.icon || "🌦️",
-        } : null;
 
         // Dominant daytime code (9am–6pm)
         const dayCodes = codes.slice(9, 18);
@@ -739,7 +647,6 @@ function useWeather(date, lat, lon) {
           stormWindow,
         };
 
-        // Only cache successful results
         setCachedWeather(date, w);
         setWeather(w);
       } catch (e) { setError("failed: " + e.message); }
@@ -750,15 +657,18 @@ function useWeather(date, lat, lon) {
 }
 
 function WeatherStack({ weather, error }) {
-  if (error) {
-    const isUnavailable = error.startsWith("available");
-    return (
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: isUnavailable ? 16 : 18, lineHeight: 1, marginBottom: 4 }}>{isUnavailable ? "📅" : "⚠️"}</div>
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontFamily: "'Courier New', monospace", maxWidth: 90, wordBreak: "break-word", lineHeight: 1.4 }}>{error}</div>
-      </div>
-    );
-  }
+  if (error === "not yet available") return (
+    <div style={{ textAlign: "right", flexShrink: 0 }}>
+      <div style={{ fontSize: 20, lineHeight: 1, marginBottom: 4 }}>📅</div>
+      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", fontFamily: "'Courier New', monospace", whiteSpace: "nowrap" }}>not yet available</div>
+    </div>
+  );
+  if (error) return (
+    <div style={{ textAlign: "right", flexShrink: 0 }}>
+      <div style={{ fontSize: 18, lineHeight: 1, marginBottom: 4 }}>⚠️</div>
+      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: "'Courier New', monospace", maxWidth: 100, wordBreak: "break-all" }}>{error}</div>
+    </div>
+  );
   if (!weather) return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 16, lineHeight: 1, marginBottom: 4 }}>🌡️</div>
@@ -768,7 +678,7 @@ function WeatherStack({ weather, error }) {
   return (
     <div style={{ textAlign: "right", flexShrink: 0 }}>
       <div style={{ fontSize: 24, lineHeight: 1, marginBottom: 4 }}>
-        {weather.stormWindow?.icon ? weather.stormWindow.icon : weather.icon}
+        {weather.stormWindow ? "⛈️" : weather.icon}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "'Courier New', monospace", lineHeight: 1.5, whiteSpace: "nowrap" }}>
         <span style={{ color: "#FFF", fontWeight: "bold" }}>{weather.high}°</span>
@@ -782,39 +692,20 @@ function WeatherStack({ weather, error }) {
   );
 }
 
-function WeatherAlert({ weather }) {
-  const [expanded, setExpanded] = React.useState(false);
+function WeatherAlert({ weather, color }) {
   if (!weather?.stormWindow) return null;
-  const { summaryLines, allWindows } = weather.stormWindow;
-  if (!summaryLines || !allWindows || summaryLines.length === 0) return null;
-  const hasMore = allWindows.length > summaryLines.length;
-  const displayLines = expanded ? allWindows : summaryLines;
-
-  const renderLine = (w, i) => {
-    const timeStr = w.end ? `${w.start}–${w.end}` : w.start;
-    const label = w.prefixLabel ? `${w.prefixLabel} · ${w.label}` : w.label;
-    return (
-      <div key={i} style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: i === 0 ? "7px 22px 4px" : "3px 22px",
-        fontSize: 11, color: `rgba(255,255,255,${w.opacity})`,
-        fontFamily: "'Courier New', monospace"
-      }}>
-        <span style={{ fontSize: 13 }}>{w.icon}</span>
-        <span>{label} · {timeStr} · {w.prob}%</span>
-      </div>
-    );
-  };
-
+  const { start, end, prob, label } = weather.stormWindow;
   return (
-    <div onClick={() => hasMore && setExpanded(e => !e)}
-      style={{ background: "rgba(0,0,0,0.08)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: 6, cursor: hasMore ? "pointer" : "default" }}>
-      {displayLines.map(renderLine)}
-      {hasMore && (
-        <div style={{ textAlign: "right", paddingRight: 22, fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "'Courier New', monospace" }}>
-          {expanded ? "▴ less" : `▾ +${allWindows.length - summaryLines.length} more`}
-        </div>
-      )}
+    <div style={{
+      display: "flex", alignItems: "center", gap: 8,
+      padding: "7px 22px",
+      background: "rgba(0,0,0,0.08)",
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
+      fontSize: 11, color: "rgba(255,255,255,0.9)",
+      fontFamily: "'Courier New', monospace"
+    }}>
+      <span>⛈️</span>
+      <span>{label} {start}–{end} · {prob}% chance</span>
     </div>
   );
 }
@@ -833,6 +724,7 @@ export default function DisneyDayCards() {
     } catch (_) {}
   }, []);
 
+  const swipeStart = useRef(null);
   const goTo = (i) => setActiveDay(Math.max(0, Math.min(days.length - 1, i)));
 
   const onPointerDown = (e) => { swipeStart.current = e.clientX; };
@@ -848,8 +740,7 @@ export default function DisneyDayCards() {
       minHeight: "100vh",
       background: "#FBF7F2",
       fontFamily: "'Georgia', serif",
-      padding: "28px 20px",
-      colorScheme: "light"
+      padding: "28px 20px"
     }}>
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
 
@@ -970,7 +861,7 @@ export default function DisneyDayCards() {
               <WeatherStack weather={weather} error={weatherError} />
             </div>
             {/* Weather alert bar — only if storm expected */}
-            <WeatherAlert weather={weather} />
+            <WeatherAlert weather={weather} color={day.color} />
           </div>
 
           {/* Highlights */}
@@ -1000,11 +891,11 @@ export default function DisneyDayCards() {
                   </div>
                 ) : (
                   <>
-                    {!h.reservations && !h.flight && (
+                    {!h.reservations && (
                       <div style={{
                         display: "flex", alignItems: "flex-start", gap: 12,
                         padding: "11px 22px",
-                        borderBottom: !h.quickService && hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none"
+                        borderBottom: !h.flight && !h.quickService && hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none"
                       }}>
                         <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{h.icon}</span>
                         {h.url ? (
@@ -1015,15 +906,6 @@ export default function DisneyDayCards() {
                           <span style={{ fontSize: 13, color: "#2A2A2A", lineHeight: 1.5 }}>{h.text}</span>
                         )}
                       </div>
-                    )}
-                    {h.flight && (
-                      <FlightStatus
-                        weatherDate={day.weatherDate}
-                        color={day.color}
-                        icon={h.icon}
-                        fallbackUrl={h.url}
-                        borderBottom={hi < day.highlights.length - 1}
-                      />
                     )}
                     {h.reservations && (
                       <div style={{ borderBottom: hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none" }}>
@@ -1037,6 +919,11 @@ export default function DisneyDayCards() {
                       </div>
                     )}
                     {h.quickService && <QuickServiceDining color={day.color} />}
+                    {h.flight && FLIGHTS[activeDay] && (
+                      <div style={{ borderBottom: hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none" }}>
+                        <FlightStatus dayIndex={activeDay} color={day.color} />
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -1064,44 +951,6 @@ export default function DisneyDayCards() {
           >
             ← Prev
           </button>
-          <a
-            href="https://disneyworld.disney.go.com/plan/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              padding: "8px 16px",
-              borderRadius: 20,
-              border: "1px solid #EDE8E1",
-              background: "#FFF",
-              color: "#555",
-              fontSize: 13,
-              fontFamily: "'Georgia', serif",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4
-            }}
-          >
-            🏰 MDE.com
-          </a>
-          <a
-            href="wdw://"
-            style={{
-              padding: "8px 16px",
-              borderRadius: 20,
-              border: "1px solid #EDE8E1",
-              background: "#FFF",
-              color: "#555",
-              fontSize: 13,
-              fontFamily: "'Georgia', serif",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4
-            }}
-          >
-            🏰 WDW App
-          </a>
           <button onClick={() => goTo(activeDay + 1)} disabled={activeDay === days.length - 1}
             style={{
               padding: "8px 20px",
