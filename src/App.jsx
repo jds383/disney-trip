@@ -38,7 +38,7 @@ const parseFlight = (data) => {
   } catch (_) { return null; }
 };
 
-function FlightStatus({ weatherDate, color }) {
+function FlightStatus({ weatherDate, color, icon, fallbackUrl, borderBottom }) {
   const info = FLIGHTS[weatherDate];
   const [live, setLive] = useState(null);
   const [spinning, setSpinning] = useState(false);
@@ -66,7 +66,16 @@ function FlightStatus({ weatherDate, color }) {
   };
 
   useEffect(() => { fetchData(); }, []);
-  if (!info) return null;
+
+  // If no FLIGHTS entry, fall back to plain link
+  if (!info) return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 22px", borderBottom: borderBottom ? "1px solid #F5F0EA" : "none" }}>
+      <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+      <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color, lineHeight: 1.5, textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}>
+        ↗
+      </a>
+    </div>
+  );
 
   const status = live?.status || null;
   const statusColor = STATUS_COLORS[status] || "#888";
@@ -77,23 +86,25 @@ function FlightStatus({ weatherDate, color }) {
   const aaUrl = "https://www.aa.com/travelInformation/flights/status/detail?search=AA|" + flightNum + "|" + dateParts[0] + "," + parseInt(dateParts[1]) + "," + parseInt(dateParts[2]) + "&ref=search";
 
   return (
-    <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", background: "#FAFAF8", padding: "10px 22px", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      {/* Main flight info — tappable link */}
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 22px", borderBottom: borderBottom ? "1px solid #F5F0EA" : "none" }}>
+      {/* Icon */}
+      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
+      {/* Flight info link */}
       <a href={aaUrl} target="_blank" rel="noopener noreferrer"
-        style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", flexWrap: "wrap" }}>
+        style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", flex: 1, flexWrap: "wrap" }}>
         <span style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A", fontFamily: "'Courier New', monospace" }}>{info.flight}</span>
         <span style={{ fontSize: 13, color: "#1A1A1A" }}>{info.from} {depTime} → {info.to} {arrTime}</span>
         {status && (
           <span style={{ fontSize: 10, background: statusColor + "22", color: statusColor, border: "1px solid " + statusColor + "44", borderRadius: 20, padding: "1px 8px", fontFamily: "'Courier New', monospace" }}>{status}</span>
         )}
-        <span style={{ fontSize: 11, color: color }}>↗</span>
+        <span style={{ fontSize: 11, color }}>↗</span>
       </a>
-      {/* Separator */}
-      <span style={{ fontSize: 10, color: "#DDD" }}>·</span>
       {/* As of + refresh */}
-      {lastUpdated && <span style={{ fontSize: 9, color: "#BBB", fontFamily: "'Courier New', monospace" }}>as of {lastUpdated}</span>}
-      <button onClick={e => { e.stopPropagation(); fetchData(); }}
-        style={{ fontSize: 13, background: "none", border: "none", cursor: "pointer", color: "#CCC", padding: 0, lineHeight: 1, display: "inline-flex", alignItems: "center", transform: spinning ? "rotate(180deg)" : "none", transition: "transform 0.4s ease" }}>↻</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+        {lastUpdated && <span style={{ fontSize: 9, color: "#BBB", fontFamily: "'Courier New', monospace", whiteSpace: "nowrap" }}>as of {lastUpdated}</span>}
+        <button onClick={e => { e.stopPropagation(); fetchData(); }}
+          style={{ fontSize: 13, background: "none", border: "none", cursor: "pointer", color: "#CCC", padding: 0, lineHeight: 1, display: "inline-flex", alignItems: "center", transform: spinning ? "rotate(180deg)" : "none", transition: "transform 0.4s ease" }}>↻</button>
+      </div>
     </div>
   );
 }
@@ -298,7 +309,7 @@ const days = [
     color: "#1A6B4A",
     emoji: "🏰",
     highlights: [
-      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
       { icon: "🌟", text: "~8:15 PM · Disney Starlight: Dream the Night Away (nighttime parade)" },
       { icon: "🎆", text: "~9:30 PM · Happily Ever After Fireworks · confirm in My Disney Experience" },
@@ -351,7 +362,7 @@ const days = [
     color: "#4A2C6B",
     emoji: "🌐",
     highlights: [
-      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
       { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
@@ -368,7 +379,7 @@ const days = [
     color: "#8A3A2C",
     emoji: "🎬",
     highlights: [
-      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-26/#/hollywood-studios/" },
       { icon: "🍽️", text: "4:10 PM · Minnie's Seasonal Dine · Hollywood & Vine · Dining Package includes preferred Fantasmic! seating", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
@@ -989,11 +1000,11 @@ export default function DisneyDayCards() {
                   </div>
                 ) : (
                   <>
-                    {!h.reservations && (
+                    {!h.reservations && !h.flight && (
                       <div style={{
                         display: "flex", alignItems: "flex-start", gap: 12,
                         padding: "11px 22px",
-                        borderBottom: !h.flight && !h.quickService && hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none"
+                        borderBottom: !h.quickService && hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none"
                       }}>
                         <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{h.icon}</span>
                         {h.url ? (
@@ -1004,6 +1015,15 @@ export default function DisneyDayCards() {
                           <span style={{ fontSize: 13, color: "#2A2A2A", lineHeight: 1.5 }}>{h.text}</span>
                         )}
                       </div>
+                    )}
+                    {h.flight && (
+                      <FlightStatus
+                        weatherDate={day.weatherDate}
+                        color={day.color}
+                        icon={h.icon}
+                        fallbackUrl={h.url}
+                        borderBottom={hi < day.highlights.length - 1}
+                      />
                     )}
                     {h.reservations && (
                       <div style={{ borderBottom: hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none" }}>
@@ -1017,11 +1037,6 @@ export default function DisneyDayCards() {
                       </div>
                     )}
                     {h.quickService && <QuickServiceDining color={day.color} />}
-                    {h.flight && FLIGHTS[day.weatherDate] && (
-                      <div style={{ borderBottom: hi < day.highlights.length - 1 ? "1px solid #F5F0EA" : "none" }}>
-                        <FlightStatus weatherDate={day.weatherDate} color={day.color} />
-                      </div>
-                    )}
                   </>
                 )}
               </div>
