@@ -309,7 +309,7 @@ const days = [
     color: "#1A6B4A",
     emoji: "🏰",
     highlights: [
-      { icon: "🏰", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM Park Close: 10:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
+      { icon: "🏰", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM · Park Close: 10:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
       { icon: "🌟", text: "~8:15 PM · Disney Starlight: Dream the Night Away (nighttime parade)" },
       { icon: "🎆", text: "~9:30 PM · Happily Ever After Fireworks · confirm in My Disney Experience" },
@@ -362,7 +362,7 @@ const days = [
     color: "#4A2C6B",
     emoji: "🌐",
     highlights: [
-      { icon: "🎡", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM Park Close: 9:00 PM (click to confirm)"", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
+      { icon: "🎡", text: "Early Entry: 8:30 AM · Park Open: 9:00 AM · Park Close: 9:00 PM (click to confirm)", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-25/#/epcot/" },
       { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
