@@ -256,7 +256,7 @@ const days = [
     emoji: "🌴",
     highlights: [
       { icon: "🛺", text: "9:30 AM · Kingdom Strollers delivery · outside Grand Floridian main lobby near vintage car" },
-      { icon: "🏨", text: "11:00 AM · GF checkout · Bell Services for luggage" },
+      { icon: "🏨", text: "11:00 AM · Checkout / Drop bags with Bell Services" },
       { alternatives: [
         { icon: "🏊", title: "Resort Pools", segments: [
           { text: "", url: null },
@@ -315,7 +315,7 @@ const days = [
         { party: "S Family", time: "8:40 AM", size: "4 guests", conf: "356081979570" },
         { party: "M Family", time: "8:55 AM", size: "5 guests", conf: "356099140407" },
       ]},
-      { icon: "🏨", text: "11:00 AM · Poly checkout · Bell Services for luggage" },
+      { icon: "🏨", text: "11:00 AM · Checkout / Drop bags with Bell Services" },
       { alternatives: [
         { icon: "🏊", title: "Resort Pools", segments: [
           { text: "", url: null },
@@ -387,7 +387,7 @@ const days = [
         { party: "S Family", time: "11:00 AM", size: "4 guests", conf: "356081980082" },
         { party: "M Family", time: "11:10 AM", size: "5 guests", conf: "356081979581" },
       ]},
-      { icon: "🏨", text: "11:00 AM · Riviera checkout · Bell Services for luggage" },
+      { icon: "🏨", text: "11:00 AM · Checkout / Drop bags with Bell Services" },
       { icon: "🚐", text: "1:00 PM · Away We Go pickup · Riviera → MCO", url: "https://awaywegoco.com/faqs" },
       { icon: "✈️", text: "Depart MCO 3:51 PM · Arrive PHL 6:35 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL810" },
     ]
