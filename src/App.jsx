@@ -242,8 +242,8 @@ const days = [
     highlights: [
       { icon: "✈️", text: "Depart PHL 5:50 PM · Arrive MCO 8:46 PM", flight: true, url: "https://www.flightaware.com/live/flight/AAL2531" },
       { icon: "🚐", text: "9:15 PM · Away We Go pickup · MCO → Grand Floridian", url: "https://awaywegoco.com/faqs" },
+      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       { icon: "🏨", text: "~10:00 PM · Arrive Grand Floridian · Unpack & rest" },
-      { icon: "🚤", text: "~9:15 PM · Electrical Water Pageant · visible from GF beach", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
     ]
   },
   {
@@ -279,10 +279,10 @@ const days = [
         ]},
       ]},
       { icon: "🏨", text: "~3:00 PM · Poly room ready · Bell Services delivers" },
-      { icon: "🚤", text: "~9:05 PM · Electrical Water Pageant · visible from GF and Poly beaches", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       { icon: "🍽️", text: "4:00 PM · 1900 Park Fare Dinner · Grand Floridian", url: "https://disneyworld.disney.go.com/dining/grand-floridian-resort-and-spa/1900-park-fare/menus/dinner/", reservations: [
         { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
         { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
+      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
       ]},
     ]
   },
