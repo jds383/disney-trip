@@ -312,7 +312,7 @@ const days = [
       { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM Park Open · 10:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/day/2026-05-23/#/magic-kingdom/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
       { icon: "🌟", text: "8:45 PM · Disney Starlight: Dream the Night Away Parade", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
-      { icon: "🎆", text: "~10:00 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
+      { icon: "🎆", text: "10:00 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
     ]
   },
   {
