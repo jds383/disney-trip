@@ -295,7 +295,7 @@ const days = [
     color: "#1A6B4A",
     emoji: "🏰",
     highlights: [
-      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM Park Open · 10:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
       { icon: "🌟", text: "8:15 PM · Disney Starlight: Dream the Night Away Parade", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
       { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
@@ -349,7 +349,7 @@ const days = [
     color: "#4A2C6B",
     emoji: "🌐",
     highlights: [
-      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🎡", text: "8:30 AM Early Entry · 9:00 AM Park Open · 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "👸", text: "11:25 AM · Princess Storybook Dining · Akershus", url: "https://disneyworld.disney.go.com/dining/epcot/akershus-royal-banquet-hall/menus/breakfast/", reservations: [
         { party: "S + M Family", time: "11:25 AM", size: "9 guests", conf: "356081980073" },
       ]},
@@ -366,7 +366,7 @@ const days = [
     color: "#8A3A2C",
     emoji: "🎬",
     highlights: [
-      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM–9:00 PM", url: "https://disneyworld.disney.go.com/calendars/" },
+      { icon: "🎬", text: "8:30 AM Early Entry · 9:00 AM Park Open · 9:00 PM Park Close", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "🍽️", text: "4:10 PM · Minnie's Seasonal Dine · Hollywood & Vine · Dining Package includes preferred Fantasmic! seating", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/hollywood-and-vine/menus/dinner/", reservations: [
         { party: "S + M Family", time: "4:10 PM", size: "9 guests", conf: "356081979580" },
       ]},
