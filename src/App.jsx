@@ -297,9 +297,9 @@ const days = [
     highlights: [
       { icon: "🏰", text: "8:30 AM Early Entry · 9:00 AM–10:00 PM (est., subject to change)", url: "https://disneyworld.disney.go.com/calendars/" },
       { icon: "🍔", text: "Dining TBD — on the go", quickService: true },
-      { icon: "🌟", text: "~8:15 PM · Disney Starlight: Dream the Night Away (nighttime parade)" },
-      { icon: "🎆", text: "~9:30 PM · Happily Ever After Fireworks · confirm in My Disney Experience" },
-      { icon: "🚤", text: "~9:05 PM · Electrical Water Pageant · visible from Poly beach", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
+      { icon: "🌟", text: "8:15 PM · Disney Starlight: Dream the Night Away Parade", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/starlight-dream-night-away-parade/" },
+      { icon: "🚤", text: "9:05 PM · Electrical Water Pageant", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/electrical-water-pageant/" },
+      { icon: "🎆", text: "9:30 PM · Happily Ever After Fireworks", url: "https://disneyworld.disney.go.com/entertainment/magic-kingdom/happily-ever-after-fireworks/" },
     ]
   },
   {
