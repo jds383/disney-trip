@@ -298,6 +298,12 @@ const days = [
         { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
         { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
       ]},
+      ]},
+      { icon: "🏨", text: "~3:00 PM · Poly room ready · Bell Services delivers" },
+      { icon: "🍽️", text: "4:00 PM · 1900 Park Fare Dinner · Grand Floridian", url: "https://disneyworld.disney.go.com/dining/grand-floridian-resort-and-spa/1900-park-fare/menus/dinner/", reservations: [
+        { party: "S Family", time: "4:00 PM", size: "4 guests", conf: "356081988915" },
+        { party: "M Family", time: "4:00 PM", size: "5 guests", conf: "356081988915" },
+      ]},
     ]
   },
   {
